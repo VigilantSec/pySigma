@@ -13,6 +13,7 @@ from sigma.processing.conditions.rule import (
     LogsourceCondition,
     RuleAttributeCondition,
     RuleContainsDetectionItemCondition,
+    RuleContainsDetectionItemField,
     RuleContainsFieldCondition,
     RuleTagCondition,
 )
@@ -34,6 +35,7 @@ from sigma.processing.conditions.values import (
 rule_conditions: Dict[str, RuleProcessingCondition] = {
     "logsource": LogsourceCondition,
     "contains_detection_item": RuleContainsDetectionItemCondition,
+    "contains_detection_item_field": RuleContainsDetectionItemField,
     "contains_field": RuleContainsFieldCondition,
     "processing_item_applied": RuleProcessingItemAppliedCondition,
     "processing_state": RuleProcessingStateCondition,
