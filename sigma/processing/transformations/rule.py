@@ -13,6 +13,7 @@ from sigma.processing.transformations.base import (
     Transformation,
 )
 from sigma.rule import SigmaLogSource, SigmaRule
+from sigma.rule.attributes import SigmaRuleTag
 
 
 @dataclass
@@ -41,3 +42,22 @@ class SetCustomAttributeTransformation(Transformation):
     def apply(self, rule: Union[SigmaRule, SigmaCorrelationRule]) -> None:
         super().apply(rule)
         rule.custom_attributes[self.attribute] = self.value
+
+
+@dataclass
+class AddTagTransformation(Transformation):
+    """
+    Add one or multiple tags to the Sigma rule.
+    """
+
+    tag: Union[str, List[str]]
+
+    def apply(
+        self, rule: SigmaRule
+    ) -> None:
+        super().apply(rule)
+        if isinstance(self.tag, str):
+            rule.tags.append(SigmaRuleTag.from_str(self.tag))
+        elif isinstance(self.tag, list):
+            rule.tags.extend([SigmaRuleTag.from_str(tag) for tag in self.tag])
+        rule.tags = list(set(rule.tags))

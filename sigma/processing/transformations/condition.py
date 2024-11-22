@@ -32,6 +32,7 @@ class AddConditionTransformation(ConditionTransformation):
     name: Optional[str] = field(default=None, compare=False)
     template: bool = False
     negated: bool = False
+    prepend: bool = False
 
     def __post_init__(self):
         if self.name is None:  # generate random detection item name if none is given
@@ -67,4 +68,8 @@ class AddConditionTransformation(ConditionTransformation):
             super().apply(rule)
 
     def apply_condition(self, cond: SigmaCondition) -> None:
-        cond.condition = ("not " if self.negated else "") + f"{self.name} and ({cond.condition})"
+        negate_or_not = "not " if self.negated else ""
+        if self.prepend:
+            cond.condition = f"{negate_or_not}{self.name} and ({cond.condition})"
+        else:
+            cond.condition = f"({cond.condition}) and {negate_or_not}{self.name}"

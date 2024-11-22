@@ -25,14 +25,19 @@ from sigma.processing.transformations.placeholder import (
 from sigma.processing.transformations.rule import (
     ChangeLogsourceTransformation,
     SetCustomAttributeTransformation,
+    AddTagTransformation,
 )
-from sigma.processing.transformations.state import SetStateTransformation
+from sigma.processing.transformations.state import (
+    SetStateTransformation,
+    AddStateTransformation,
+)
 from sigma.processing.transformations.values import (
     ConvertTypeTransformation,
     HashesFieldsDetectionItemTransformation,
     MapStringTransformation,
     RegexTransformation,
     ReplaceStringTransformation,
+    ReplaceRegexTransformation,
     SetValueTransformation,
     CaseTransformation,
 )
@@ -51,11 +56,14 @@ transformations: Dict[str, Transformation] = {
     "add_condition": AddConditionTransformation,
     "change_logsource": ChangeLogsourceTransformation,
     "add_field": AddFieldTransformation,
+    "add_tag": AddTagTransformation,
     "remove_field": RemoveFieldTransformation,
     "set_field": SetFieldTransformation,
     "replace_string": ReplaceStringTransformation,
+    "replace_regex": ReplaceRegexTransformation,
     "map_string": MapStringTransformation,
     "set_state": SetStateTransformation,
+    "add_state": AddStateTransformation,
     "regex": RegexTransformation,
     "set_value": SetValueTransformation,
     "convert_type": ConvertTypeTransformation,

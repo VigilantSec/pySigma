@@ -1,12 +1,14 @@
 from dataclasses import dataclass, field
 from datetime import date
 from uuid import UUID
+import re
 
 import sigma
 from sigma.correlations import SigmaCorrelationRule
 from sigma.processing.conditions.base import (
     RuleDetectionItemCondition,
     RuleProcessingCondition,
+    DetectionItemProcessingCondition,
 )
 from sigma.types import sigma_type
 from typing import ClassVar, Dict, Literal, Optional, Union
@@ -19,7 +21,7 @@ from sigma.rule import (
     SigmaRuleTag,
     SigmaStatus,
 )
-from sigma.exceptions import SigmaConfigurationError
+from sigma.exceptions import SigmaConfigurationError, SigmaRegularExpressionError
 
 
 @dataclass
@@ -121,6 +123,101 @@ class RuleContainsDetectionItemField(RuleDetectionItemCondition):
             raise TypeError("Parameter of type SigmaDetection or SigmaDetectionItem expected.")
 
         return False
+
+
+@dataclass
+class RuleContainsDetectionItemFieldRegex(RuleDetectionItemCondition):
+    """Returns True if rule contains a detection item that matches the given field name regex."""
+
+    pattern: str
+
+    def __post_init__(self):
+        try:
+            self.re = re.compile(self.pattern)
+        except re.error as e:
+            raise SigmaRegularExpressionError(
+                f"Regular expression '{self.pattern}' is invalid: {str(e)}"
+            ) from e
+
+    def find_detection_item(self, detection: Union[SigmaDetectionItem, SigmaDetection]) -> bool:
+        if isinstance(detection, SigmaDetection):
+            for detection_item in detection.detection_items:
+                if self.find_detection_item(detection_item):
+                    return True
+        elif isinstance(detection, SigmaDetectionItem):
+            return bool(self.re.match(detection.field or ''))
+        else:
+            raise TypeError("Parameter of type SigmaDetection or SigmaDetectionItem expected.")
+
+        return False
+
+
+@dataclass
+class RuleContainsKeywordDetectionItem(RuleDetectionItemCondition):
+    """Returns True if rule contains a detection item that's a keyword, aka no field name."""
+
+    def find_detection_item(self, detection: Union[SigmaDetectionItem, SigmaDetection]) -> bool:
+        if isinstance(detection, SigmaDetection):
+            for detection_item in detection.detection_items:
+                if self.find_detection_item(detection_item):
+                    return True
+        elif isinstance(detection, SigmaDetectionItem):
+            return detection.is_keyword()
+        else:
+            raise TypeError("Parameter of type SigmaDetection or SigmaDetectionItem expected.")
+
+        return False
+
+
+@dataclass
+class DetectionItemIsField(DetectionItemProcessingCondition):
+    """Returns True if detection item matches the given field name."""
+
+    field: Optional[str]
+
+    def match(
+        self,
+        detection_item: SigmaDetectionItem,
+    ) -> bool:
+        return detection_item.field is not None and detection_item.field == self.field
+
+
+@dataclass
+class DetectionItemIsFieldRegex(DetectionItemProcessingCondition):
+    """Returns True if detection item matches the given field name regex."""
+
+    pattern: str
+    negate: bool = False
+
+    def __post_init__(self):
+        try:
+            self.re = re.compile(self.pattern)
+        except re.error as e:
+            raise SigmaRegularExpressionError(
+                f"Regular expression '{self.pattern}' is invalid: {str(e)}"
+            ) from e
+
+    def match(
+        self,
+        detection_item: SigmaDetectionItem,
+    ) -> bool:
+        result = self.re.match(detection_item.field or '')
+
+        if self.negate:
+            return not result
+        else:
+            return bool(result)
+
+
+@dataclass
+class DetectionItemIsKeyword(DetectionItemProcessingCondition):
+    """Returns True if detection item is a keyword, so no field name."""
+
+    def match(
+        self,
+        detection_item: SigmaDetectionItem,
+    ) -> bool:
+        return detection_item.is_keyword()
 
 
 @dataclass

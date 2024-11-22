@@ -48,9 +48,11 @@ class NestedProcessingTransformation(Transformation):
 
     def apply(self, rule: Union[SigmaRule, SigmaCorrelationRule]) -> None:
         super().apply(rule)
+        self._nested_pipeline.state.update(self._pipeline.state)
         self._nested_pipeline.apply(rule)
         self._pipeline.applied.extend(self._nested_pipeline.applied)
         self._pipeline.applied_ids.update(self._nested_pipeline.applied_ids)
         self._pipeline.field_name_applied_ids.update(self._nested_pipeline.field_name_applied_ids)
         self._pipeline.field_mappings.merge(self._nested_pipeline.field_mappings)
         self._pipeline.state.update(self._nested_pipeline.state)
+        self._nested_pipeline.state = dict()

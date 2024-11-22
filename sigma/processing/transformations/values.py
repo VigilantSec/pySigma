@@ -14,6 +14,7 @@ import re
 from sigma.processing.transformations.base import (
     DetectionItemTransformation,
     StringValueTransformation,
+    RegexValueTransformation,
     ValueTransformation,
 )
 from sigma.rule import SigmaDetection, SigmaDetectionItem
@@ -390,3 +391,29 @@ class CaseTransformation(StringValueTransformation):
             return val.lower()
         else:
             return val.upper()
+
+
+@dataclass
+class ReplaceRegexTransformation(RegexValueTransformation):
+    """
+    Replace string part matched by regular expresssion with replacement string that can reference
+    capture groups.
+
+    The replacement is implemented with re.sub() and can use all features available there.
+    """
+
+    regex: str
+    replacement: str
+
+    def __post_init__(self):
+        super().__post_init__()
+        try:
+            self.re = re.compile(self.regex)
+        except re.error as e:
+            raise SigmaRegularExpressionError(
+                f"Regular expression '{self.regex}' is invalid: {str(e)}"
+            ) from e
+
+    def apply_regex_value(self, field: str, val: SigmaRegularExpression) -> SigmaRegularExpression:
+        if isinstance(val, SigmaRegularExpression):
+            return SigmaRegularExpression(self.re.sub(self.replacement, val.regexp), val.flags)

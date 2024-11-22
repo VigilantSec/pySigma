@@ -21,6 +21,7 @@ from sigma.types import (
     SigmaString,
     SigmaType,
     SigmaFieldReference,
+    SigmaRegularExpression,
 )
 
 
@@ -300,6 +301,25 @@ class StringValueTransformation(ValueTransformation):
 
         * None to drop the value
         * a single SigmaString object which replaces the original value.
+        """
+
+
+class RegexValueTransformation(ValueTransformation):
+    """
+    Base class for transformations that operate on SigmaRegularExpression values.
+    """
+
+    def apply_value(self, field: str, val: SigmaRegularExpression) -> Optional[SigmaRegularExpression]:
+        if isinstance(val, SigmaRegularExpression):
+            return self.apply_regex_value(field, val)
+
+    @abstractmethod
+    def apply_regex_value(self, field: str, val: SigmaRegularExpression) -> Optional[SigmaRegularExpression]:
+        """
+        Perform a value transformation. This method can return:
+
+        * None to drop the value
+        * a single SigmaRegularExpression object which replaces the original value.
         """
 
 
