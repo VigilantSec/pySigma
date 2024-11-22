@@ -575,7 +575,7 @@ class ProcessingPipeline:
         self.applied_ids = set()
         self.field_name_applied_ids = defaultdict(set)
         self.field_mappings = FieldMappingTracking()
-        self.state = dict()
+        self.state = self.state or dict()
         for item in self.items:
             applied = item.apply(rule)
             self.applied.append(applied)
