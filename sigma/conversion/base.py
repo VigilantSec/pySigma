@@ -1268,7 +1268,7 @@ class TextQueryBackend(Backend):
                             if self.compare_precedence(cond, arg)
                             else self.convert_condition_group(arg, state)
                         )
-                        for arg in cond.args
+                        for arg in cond.args if (hasattr(arg, 'args') and len(arg.args)) or not hasattr(arg, 'args')
                     )
                     if converted is not None and not isinstance(converted, DeferredQueryExpression)
                 )
